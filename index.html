@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#d9ead3" />
+  <title>Touch Grass Garden</title>
+  <style>
+    :root {
+      --ink: #2e3d32;
+      --muted: #718070;
+      --paper: #fffaf1;
+      --cream: #f7efdf;
+      --leaf: #789b68;
+      --leaf-dark: #3f6549;
+      --moss: #a9c58a;
+      --earth: #9a7354;
+      --earth-dark: #6e4c39;
+      --sun: #f4bd5d;
+      --rose: #df8e8f;
+      --line: rgba(62, 83, 65, .14);
+      --shadow: 0 18px 50px rgba(69, 83, 60, .12);
+      --radius: 28px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink);
+      font-family: ui-rounded, "Nunito", "Avenir Next", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #dbe9d6;
+      overflow-x: hidden;
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #f0a65f; outline-offset: 3px; }
+    .app-shell { min-height: 100vh; position: relative; isolation: isolate; }
+    .sky {
+      position: fixed; inset: 0; z-index: -2; transition: background 1s ease;
+      background: linear-gradient(160deg, #f4d8ba 0%, #e8d5b9 42%, #c7d9c2 100%);
+    }
+    .sky::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 15% 10%, rgba(255,255,255,.43), transparent 28%), radial-gradient(circle at 88% 18%, rgba(255,255,255,.22), transparent 22%); pointer-events:none; }
+    .topbar { max-width: 1120px; margin: 0 auto; padding: 22px 20px 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display:flex; align-items:center; gap: 11px; font-weight: 900; letter-spacing: -.04em; color: var(--leaf-dark); font-size: clamp(1.15rem, 3vw, 1.5rem); }
+    .brand-mark { width: 42px; height: 42px; display:grid; place-items:center; border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); transform: rotate(-5deg); }
+    .brand-mark svg { width: 28px; }
+    .nav-actions { display:flex; gap: 8px; align-items:center; }
+    .icon-btn { background: rgba(255,250,241,.72); color: var(--leaf-dark); border: 1px solid rgba(255,255,255,.55); border-radius: 15px; padding: 10px 13px; font-weight: 800; transition: transform .18s ease, background .18s ease; }
+    .icon-btn:hover { transform: translateY(-2px); background: var(--paper); }
+    .demo-badge { display:none; background: #594c83; color:#fff; border-radius: 999px; padding: 5px 9px; font-size: .7rem; letter-spacing: .1em; font-weight: 900; }
+    .demo-on .demo-badge { display:inline-block; }
+    .main { max-width: 1120px; margin: 0 auto; padding: 12px 20px 40px; }
+    .screen { display:none; animation: fadeUp .35s ease both; contain: layout style; }
+    .screen.active { display:block; }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    .hero { display:grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: stretch; margin: 24px 0 20px; }
+    .hero-copy, .hero-art, .panel { background: rgba(255,250,241,.86); border:1px solid rgba(255,255,255,.7); box-shadow: var(--shadow); border-radius: var(--radius); }
+    .hero-copy { padding: clamp(25px, 5vw, 48px); display:flex; flex-direction:column; justify-content:center; min-height: 320px; }
+    .eyebrow { text-transform: uppercase; letter-spacing:.15em; font-size:.72rem; font-weight: 900; color: var(--leaf); margin:0 0 13px; }
+    h1, h2, h3, p { margin-top:0; }
+    h1 { font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: .94; letter-spacing:-.075em; margin-bottom: 18px; color: var(--leaf-dark); max-width: 620px; }
+    h2 { letter-spacing:-.05em; font-size: clamp(1.55rem, 3vw, 2.2rem); margin-bottom: 8px; }
+    h3 { letter-spacing:-.03em; margin-bottom: 6px; }
+    .lede { font-size: 1.04rem; line-height: 1.55; color: var(--muted); max-width: 480px; margin-bottom: 24px; }
+    .primary-btn { align-self:flex-start; color:#fffdf4; background: var(--leaf-dark); padding: 16px 22px; border-radius: 18px; font-weight: 900; box-shadow: 0 9px 0 #304d39, 0 16px 24px rgba(48,77,57,.18); transition: transform .16s ease, box-shadow .16s ease; }
+    .primary-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 0 #304d39, 0 20px 26px rgba(48,77,57,.16); }
+    .primary-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #304d39, 0 8px 14px rgba(48,77,57,.16); }
+    .secondary-btn { background: #edf3e5; color: var(--leaf-dark); padding: 13px 17px; border-radius: 15px; font-weight: 900; }
+    .quiet-btn { color: var(--muted); background: transparent; text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
+    .hero-art { overflow:hidden; position:relative; display:grid; place-items:center; min-height:320px; }
+    .hero-art::before { content:""; position:absolute; width:290px; height:290px; border-radius:50%; background: #f3dfb9; top: 21px; right: 8%; opacity:.55; }
+    .hero-art svg { width:82%; max-width: 360px; position:relative; z-index:1; }
+    .stats { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat { background:rgba(255,250,241,.72); padding: 17px 18px; border-radius: 20px; border:1px solid rgba(255,255,255,.6); box-shadow: 0 10px 24px rgba(69,83,60,.07); }
+    .stat-label { color: var(--muted); font-size:.78rem; font-weight:800; }
+    .stat-value { display:block; margin-top:3px; font-size:1.65rem; font-weight:950; color:var(--leaf-dark); letter-spacing:-.06em; }
+    .section-head { display:flex; justify-content:space-between; align-items:end; gap:12px; margin: 28px 2px 12px; }
+    .section-head p { margin-bottom:0; color:var(--muted); font-size:.9rem; }
+    .garden-panel { padding: clamp(15px, 4vw, 28px); background:rgba(255,250,241,.76); border:1px solid rgba(255,255,255,.7); box-shadow:var(--shadow); border-radius:var(--radius); }
+    .garden-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: clamp(8px, 2vw, 15px); }
+    .plot { aspect-ratio: 1 / .88; border-radius: 22px; background: linear-gradient(145deg,#c6dba9,#a4c486); position:relative; display:grid; place-items:end center; overflow:hidden; border: 3px solid rgba(255,255,255,.35); transition: transform .18s ease, filter .3s ease; }
+    .plot::before { content:""; position:absolute; width:76%; height:32%; bottom:-8%; border-radius:50%; background:rgba(89,121,68,.28); }
+    .plot:hover { transform:translateY(-4px) rotate(-1deg); }
+    .plot.empty { background: linear-gradient(145deg, #dce9bf, #c2d79f); }
+    .plot.empty::after { content:"+"; position:absolute; top: 42%; left:50%; transform:translate(-50%,-50%); color:rgba(75,105,68,.4); font-size:1.8rem; font-weight:800; }
+    .plot.droopy { filter: saturate(.62); }
+    .plot.droopy .plant-art { transform: rotate(5deg); }
+    .plant-art { width:82%; height:82%; position:relative; z-index:1; transition: transform .25s ease; animation:sway 4.8s ease-in-out infinite; transform-origin: bottom center; }
+    @keyframes sway { 0%,100%{transform:rotate(-1deg)} 50%{transform:rotate(1.5deg)} }
+    .plot:hover .plant-art { animation: bounce .45s ease; }
+    @keyframes bounce { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-9px) rotate(-3deg)} }
+    .plant-name { position:absolute; z-index:2; left:8px; bottom:6px; font-size:.63rem; padding:4px 7px; color:var(--leaf-dark); background:rgba(255,250,241,.72); border-radius:9px; font-weight:900; opacity:0; transition: opacity .18s ease; }
+    .plot:hover .plant-name { opacity:1; }
+    .empty-state { text-align:center; padding: 34px 12px 12px; color:var(--muted); }
+    .empty-state strong { color:var(--leaf-dark); }
+    .outside-screen { min-height: calc(100vh - 100px); display:flex; align-items:center; justify-content:center; }
+    .outside-card { width:min(660px,100%); text-align:center; background:rgba(255,250,241,.74); border:1px solid rgba(255,255,255,.75); box-shadow:var(--shadow); border-radius:36px; padding:clamp(30px,7vw,65px) 22px; position:relative; overflow:hidden; }
+    .outside-card::before { content:""; position:absolute; width:260px; height:260px; border-radius:50%; background:#f3deba; opacity:.55; top:-150px; left:50%; transform:translateX(-50%); }
+    .outside-plant { width:min(270px,70vw); margin:4px auto 5px; position:relative; z-index:1; }
+    .outside-plant svg { width:100%; height:auto; }
+    .timer-label { color:var(--muted); font-weight:900; letter-spacing:.1em; text-transform:uppercase; font-size:.8rem; }
+    .timer { font-variant-numeric:tabular-nums; font-size:clamp(3.7rem,15vw,7.5rem); line-height:.9; letter-spacing:-.09em; color:var(--leaf-dark); font-weight:950; margin: 16px 0 15px; }
+    .outside-message { color:var(--muted); min-height:24px; }
+    .back-btn { background:var(--earth-dark); color:#fffdf4; border-radius:17px; padding:15px 26px; font-weight:900; box-shadow:0 7px 0 #563929; margin-top:14px; }
+    .reward-wrap { position:relative; min-height: 68vh; display:grid; place-items:center; }
+    .reward-card { width:min(700px,100%); text-align:center; padding:30px 20px; background:rgba(255,250,241,.82); border:1px solid rgba(255,255,255,.75); border-radius:32px; box-shadow:var(--shadow); overflow:hidden; position:relative; }
+    .reward-plant { width:190px; margin: 5px auto 7px; animation:rewardPop .8s cubic-bezier(.2,1.5,.5,1) both; }
+    @keyframes rewardPop { from{opacity:0; transform:scale(.25) translateY(35px)} to{opacity:1; transform:scale(1) translateY(0)} }
+    .petal { position:absolute; width:10px; height:16px; background:var(--rose); border-radius:80% 10% 80% 10%; opacity:0; animation:fall 2.2s ease-in forwards; }
+    @keyframes fall { 0%{opacity:0; transform:translateY(-30px) rotate(0)} 12%{opacity:1} 100%{opacity:0; transform:translateY(420px) rotate(260deg)} }
+    .reward-stats { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; margin:17px auto 22px; }
+    .pill { display:inline-flex; align-items:center; gap:5px; background:#edf3e5; color:var(--leaf-dark); border-radius:999px; padding:8px 12px; font-weight:850; font-size:.88rem; }
+    .journal-box { max-width:520px; margin:22px auto 0; text-align:left; background:rgba(247,239,223,.7); border-radius:22px; padding:18px; }
+    .journal-box h3 { text-align:center; margin-bottom:8px; }
+    .journal-hint { color:var(--muted); text-align:center; font-size:.86rem; margin:-2px 0 14px; }
+    .emoji-row { display:flex; justify-content:center; gap:7px; flex-wrap:wrap; margin-bottom:13px; }
+    .emoji-choice { width:42px; height:42px; border-radius:14px; background:#fffaf1; border:2px solid transparent; font-size:1.3rem; transition:transform .15s ease, border .15s ease; }
+    .emoji-choice:hover, .emoji-choice.selected { border-color:var(--sun); transform:translateY(-3px); }
+    textarea { width:100%; resize:vertical; min-height:70px; border:1px solid var(--line); border-radius:15px; padding:11px; color:var(--ink); background:#fffdf9; }
+    .journal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:10px; }
+    .history-list { display:grid; gap:11px; }
+    .history-item { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:13px; padding:15px 16px; background:rgba(255,250,241,.78); border-radius:20px; border:1px solid rgba(255,255,255,.7); box-shadow:0 8px 23px rgba(69,83,60,.06); }
+    .history-emoji { width:43px; height:43px; border-radius:15px; display:grid; place-items:center; background:#f5e5c7; font-size:1.4rem; }
+    .history-main strong { display:block; color:var(--leaf-dark); }
+    .history-main span { color:var(--muted); font-size:.84rem; }
+    .history-note { color:var(--earth-dark); font-size:.85rem; max-width:280px; text-align:right; }
+    .modal-backdrop { display:none; position:fixed; inset:0; z-index:10; background:rgba(39,54,42,.32); align-items:center; justify-content:center; padding:20px; }
+    .modal-backdrop.open { display:flex; animation:fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .detail-card { width:min(420px,100%); background:var(--paper); border-radius:26px; box-shadow:0 25px 70px rgba(30,45,32,.25); padding:23px; position:relative; }
+    .close-btn { position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; background:#edf3e5; color:var(--leaf-dark); font-weight:900; }
+    .detail-plant { width:130px; margin:4px auto 7px; }
+    .detail-grid { display:grid; gap:8px; margin-top:15px; }
+    .detail-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px dashed var(--line); color:var(--muted); }
+    .detail-row strong { color:var(--ink); text-align:right; }
+    .toast { position:fixed; z-index:20; left:50%; bottom:20px; transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--leaf-dark); color:#fffdf4; border-radius:999px; padding:12px 17px; font-weight:850; box-shadow:0 12px 30px rgba(48,77,57,.25); transition:opacity .25s ease, transform .25s ease; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .demo-tools { display:none; position:fixed; right:13px; bottom:13px; z-index:5; gap:6px; flex-wrap:wrap; max-width:min(430px, calc(100vw - 26px)); background:rgba(255,250,241,.94); border:1px solid rgba(255,255,255,.8); padding:7px; border-radius:16px; box-shadow:var(--shadow); }
+    .demo-on .demo-tools { display:flex; }
+    .demo-tools button { border-radius:10px; padding:7px 9px; color:var(--leaf-dark); background:#e9f0df; font-size:.74rem; font-weight:900; }
+    .demo-tools button:last-child { color:#9c5552; background:#f7e3dc; }
+    .footer-note { color:var(--muted); text-align:center; font-size:.78rem; margin:22px 0 0; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:720px) {
+      .topbar { padding-top:14px; }
+      .hero { grid-template-columns:1fr; }
+      .hero-art { min-height:190px; order:-1; }
+      .hero-art svg { width:62%; }
+      .hero-art::before { width:180px; height:180px; top:4px; }
+      .hero-copy { min-height:0; }
+      .stats { gap:8px; }
+      .stat { padding:13px 11px; }
+      .stat-value { font-size:1.28rem; }
+      .history-item { grid-template-columns:auto 1fr; }
+      .history-note { grid-column:2; text-align:left; max-width:none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <div class="sky" id="sky"></div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 34V14M20 22c-8 1-11-4-11-10 7 0 11 3 11 10Zm0-4c1-8 6-12 13-11 0 7-5 11-13 11Z" fill="none" stroke="#3f6549" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 34h15" stroke="#9a7354" stroke-width="3" stroke-linecap="round"/></svg></span> Touch Grass Garden</div>
+      <div class="nav-actions"><span class="demo-badge">DEMO</span><button class="icon-btn" id="historyBtn" type="button">History</button></div>
+    </header>
+    <main class="main">
+      <section class="screen active" id="gardenScreen" aria-labelledby="gardenTitle">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">A tiny reason to step outside</p>
+            <h1 id="gardenTitle">Go out. Come back greener.</h1>
+            <p class="lede">Spend a little time under the open sky and your cozy garden will grow right along with you.</p>
+            <button class="primary-btn" id="goOutsideBtn" type="button">🌱 I’m going outside</button>
+          </div>
+          <div class="hero-art" aria-hidden="true" id="heroArt"></div>
+        </div>
+        <div class="stats" aria-label="Garden stats">
+          <div class="stat"><span class="stat-label">Daily streak</span><span class="stat-value" id="streakStat">0 days</span></div>
+          <div class="stat"><span class="stat-label">Time outside</span><span class="stat-value" id="timeStat">0m</span></div>
+          <div class="stat"><span class="stat-label">Garden blooms</span><span class="stat-value" id="bloomStat">0 / 12</span></div>
+        </div>
+        <div class="section-head"><div><h2>Your garden</h2><p>Tap a plant to remember the day it grew.</p></div></div>
+        <div class="garden-panel"><div class="garden-grid" id="gardenGrid"></div><div class="empty-state" id="emptyState">Your first little sprout is waiting for you. <strong>Ten minutes outside</strong> helps it bloom.</div></div>
+        <p class="footer-note">No GPS. No sensors. Just a timer and a little encouragement.</p>
+      </section>
+
+      <section class="screen" id="outsideScreen" aria-labelledby="outsideTitle">
+        <div class="outside-screen"><div class="outside-card">
+          <p class="eyebrow">A quiet little pause</p><h2 id="outsideTitle">You’re outside 🌿</h2>
+          <div class="outside-plant" id="outsidePlant" aria-hidden="true"></div>
+          <div class="timer-label">time under open sky</div><div class="timer" id="timer">00:00</div>
+          <p class="outside-message" id="outsideMessage">Notice one small thing around you.</p>
+          <button class="back-btn" id="backBtn" type="button">I’m back</button>
+        </div></div>
+      </section>
+
+      <section class="screen" id="rewardScreen" aria-labelledby="rewardTitle">
+        <div class="reward-wrap"><div class="reward-card" id="rewardCard">
+          <div class="petal" style="left:14%;animation-delay:.05s"></div><div class="petal" style="left:29%;animation-delay:.6s;background:#f1c566"></div><div class="petal" style="left:72%;animation-delay:.32s"></div><div class="petal" style="left:86%;animation-delay:.9s;background:#f1c566"></div>
+          <p class="eyebrow">A little garden magic</p><h2 id="rewardTitle">Your garden grew!</h2><div class="reward-plant" id="rewardPlant"></div>
+          <div class="reward-stats" id="rewardStats"></div>
+          <p id="rewardMessage" class="lede" style="margin:0 auto;max-width:500px"></p>
+          <div class="journal-box"><h3>Add an awareness note</h3><p class="journal-hint">Choose a feeling or write one detail you noticed. It helps the moment stick.</p><div class="emoji-row" id="emojiRow"></div><label class="sr-only" for="journalNote">What did you notice outside?</label><textarea id="journalNote" maxlength="140" placeholder="A bird on the fence, warm sunshine, a cool breeze…"></textarea><div class="journal-actions"><button class="quiet-btn" id="skipJournalBtn" type="button">Skip for now</button><button class="secondary-btn" id="saveJournalBtn" type="button">Save awareness note</button></div></div>
+        </div></div>
+      </section>
+
+      <section class="screen" id="historyScreen" aria-labelledby="historyTitle"><div class="section-head" style="margin-top:30px"><div><p class="eyebrow">Your outside moments</p><h2 id="historyTitle">Garden journal</h2><p>Every session counts as a small win.</p></div><button class="secondary-btn" id="backToGardenBtn" type="button">Back to garden</button></div><div class="history-list" id="historyList"></div><div class="empty-state" id="historyEmpty">No journal entries yet. Your first one is waiting outside.</div></section>
+    </main>
+    <div class="demo-tools" aria-label="Developer and demonstration controls"><button id="demoPlayBtn" type="button">▶ Play demo</button><button id="fastGrowthBtn" type="button">Fast growth: off</button><button id="seedBtn" type="button">Seed garden</button><button id="fullGrowthBtn" type="button">Full growth</button><button id="resetBtn" type="button">Reset</button></div>
+    <div class="modal-backdrop" id="modal"><div class="detail-card"><button class="close-btn" id="closeModalBtn" type="button" aria-label="Close plant details">×</button><div class="detail-plant" id="detailPlant"></div><h2 id="detailTitle" style="text-align:center;margin-bottom:4px"></h2><p id="detailSubtitle" style="text-align:center;color:var(--muted);margin-bottom:3px"></p><div class="detail-grid" id="detailGrid"></div></div></div>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script>
+    /* -------------------- config -------------------- */
+    const CONFIG = {
+      storageKey: "touch-grass-garden-v1",
+      minimumMinutes: 10,
+      demoSecondsPerMinute: 1,
+      fastGrowthMinutes: 0.2,
+      thresholds: { sprout: 2, smallPlant: 10, bloom: 20, rarePlant: 30 },
+      plotCount: 12,
+      plantTypes: ["sunflower", "mushroom", "cactus", "cherry"],
+      journalEmojis: ["☀️", "🌧️", "🐦", "🌳", "🌸", "🐛"]
+    };
+
+    /* -------------------- state / storage -------------------- */
+    const freshState = () => ({ version: 1, plots: Array.from({length: CONFIG.plotCount}, () => null), sessions: [], streak: 0, lastSessionDate: null, activeSession: null, pendingReward: null });
+    let state = loadState();
+    let selectedEmoji = "";
+    let timerHandle = null;
+    const query = new URLSearchParams(location.search);
+    const demoMode = query.get("demo") === "1";
+    const devMode = demoMode || query.get("dev") === "1";
+    let fastGrowth = query.get("fast") === "1" || localStorage.getItem("touch-grass-fast-growth") === "1";
+    const $ = (id) => document.getElementById(id);
+    function loadState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CONFIG.storageKey) || "null");
+        if (!parsed || !Array.isArray(parsed.plots) || !Array.isArray(parsed.sessions)) return freshState();
+        return {...freshState(), ...parsed, plots: parsed.plots.slice(0, CONFIG.plotCount)};
+      } catch (error) { return freshState(); }
+    }
+    function saveState() { localStorage.setItem(CONFIG.storageKey, JSON.stringify(state)); }
+    function isoDate(date = new Date()) { return date.toISOString().slice(0, 10); }
+    function dateLabel(dateString) { return new Date(dateString + "T12:00:00").toLocaleDateString(undefined, {month:"short", day:"numeric", year:"numeric"}); }
+    function minutesForSession(session) { return Math.max(0, Math.round(session.minutes || 0)); }
+    function totalMinutes() { return state.sessions.reduce((sum, session) => sum + minutesForSession(session), 0); }
+    function formatMinutes(total) { const mins = Math.max(0, Math.floor(total)); if (mins < 60) return `${mins}m`; const h = Math.floor(mins / 60); const m = mins % 60; return `${h}h ${m}m`; }
+    function formatTimer(minutes) { const whole = Math.max(0, Math.floor(minutes)); const h = Math.floor(whole / 60); const m = whole % 60; const s = Math.floor((minutes - whole) * 60); return h > 0 ? `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}` : `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`; }
+    function elapsedMinutes() { if (!state.activeSession) return 0; const divisor = demoMode || fastGrowth ? 1000 * (fastGrowth ? CONFIG.fastGrowthMinutes : CONFIG.demoSecondsPerMinute) : 60000; return Math.max(0, (Date.now() - state.activeSession.startTime) / divisor); }
+
+    /* -------------------- plant art -------------------- */
+    function esc(value) { return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+    function plantSVG(type = "sunflower", stage = 0, large = false) {
+      const scale = large ? "1.1" : "1";
+      const common = `<svg viewBox="0 0 160 160" role="img" aria-label="${esc(type)} plant" style="--s:${scale}"><path d="M20 137 Q80 121 140 137" fill="none" stroke="#8d6548" stroke-width="12" stroke-linecap="round" opacity=".7"/>`;
+      if (stage === 0) return common + `<path d="M67 132c4-15 12-18 25-4M91 132c-3-15-11-18-24-4" fill="none" stroke="#47724f" stroke-width="5" stroke-linecap="round"/></svg>`;
+      if (type === "sunflower") return common + `<path d="M80 131V${stage === 1 ? 91 : 67}" stroke="#4f8053" stroke-width="7" stroke-linecap="round"/><path d="M80 110C64 99 55 104 50 113c14 3 23 2 30-4M80 94c12-12 22-10 29-2-10 8-19 9-27 6" fill="#66965d" stroke="#47724f" stroke-width="3"/>${stage >= 2 ? `<g transform="translate(80 ${stage === 2 ? 66 : 54})"><circle r="20" fill="#e8ad4f"/><path d="M0-29c-14-12-5-23 3-6 9-18 19-9 8 6 18-9 23 4 5 10 14 13 3 22-8 7-5 19-19 12-10-5-17 6-21-8-5-12-20-2-18-16 7-7Z" fill="#f4cb6b"/><circle r="8" fill="#875d3e"/></g>` : `<path d="M72 67c0-15 16-15 16 0" fill="#f4cb6b" stroke="#875d3e" stroke-width="4"/>`}</svg>`;
+      if (type === "mushroom") return common + `<path d="M80 132V${stage === 1 ? 98 : 79}" stroke="#f1e4ca" stroke-width="12" stroke-linecap="round"/><path d="M80 112C65 102 55 108 52 117c12 2 22 0 28-5M80 98c11-8 19-6 25 1-9 7-17 7-24 3" fill="#729b62" stroke="#47724f" stroke-width="3"/>${stage >= 2 ? `<path d="M42 78c3-25 74-30 77 0-16 12-60 12-77 0Z" fill="#df8e8f" stroke="#935b58" stroke-width="4"/><circle cx="67" cy="65" r="5" fill="#fff1d6"/><circle cx="98" cy="72" r="4" fill="#fff1d6"/>` : `<path d="M59 95c1-20 41-24 43 0-10 8-32 8-43 0Z" fill="#df8e8f" stroke="#935b58" stroke-width="4"/>`}</svg>`;
+      if (type === "cactus") return common + `<path d="M80 132V${stage === 1 ? 86 : 56}" stroke="#477b59" stroke-width="${stage >= 2 ? 19 : 10}" stroke-linecap="round"/><path d="M75 100c-15 5-23-4-21-16M86 87c16 5 24-3 22-15" fill="none" stroke="#477b59" stroke-width="${stage >= 2 ? 12 : 7}" stroke-linecap="round"/>${stage >= 2 ? `<circle cx="80" cy="47" r="7" fill="#f5c36c"/><path d="M80 33v-8M66 40l-6-6M94 40l6-6" stroke="#df8e8f" stroke-width="4" stroke-linecap="round"/>` : ``}</svg>`;
+      return common + `<path d="M80 132V${stage === 1 ? 88 : 63}" stroke="#47724f" stroke-width="7" stroke-linecap="round"/><path d="M78 111c-19-10-29-2-32 8 15 1 25-2 31-8M82 98c17-13 27-8 31 1-12 7-22 7-31 1" fill="#6e965d" stroke="#47724f" stroke-width="3"/>${stage >= 2 ? `<g fill="#e88fa3" stroke="#9f5c70" stroke-width="2"><circle cx="80" cy="58" r="17"/><circle cx="58" cy="67" r="14"/><circle cx="103" cy="68" r="14"/><circle cx="70" cy="43" r="13"/><circle cx="94" cy="43" r="13"/></g><circle cx="81" cy="56" r="8" fill="#f4cb6b"/>` : `<circle cx="80" cy="70" r="12" fill="#e88fa3" stroke="#9f5c70" stroke-width="3"/>`}</svg>`;
+    }
+    function plantLabel(plot) { return plot.stage >= 3 ? `${plot.type} bloom` : plot.stage === 2 ? `${plot.type} plant` : plot.stage === 1 ? "sprout" : "seed"; }
+
+    function heroSVG() { return `<svg viewBox="0 0 420 300" aria-hidden="true"><path d="M29 242c92-30 232-30 362 0" fill="none" stroke="#9a7354" stroke-width="20" stroke-linecap="round" opacity=".38"/><path d="M91 239V126" stroke="#527c54" stroke-width="9" stroke-linecap="round"/><path d="M91 181C49 159 34 178 31 199c28 3 47-4 60-17M92 158c38-34 59-19 69 2-28 18-48 17-68 5" fill="#75a167" stroke="#47724f" stroke-width="5"/><g transform="translate(91 105)"><circle r="35" fill="#e6aa4d"/><path d="M0-49c-22-19-8-39 5-9 16-30 32-14 14 9 30-16 39 6 8 17 23 21 4 38-14 11-9 30-31 21-16-8-28 10-35-14-8-21-36-3-32-27 11-13Z" fill="#f5cc6e"/><circle r="14" fill="#805a40"/></g><path d="M282 240V145" stroke="#47724f" stroke-width="8" stroke-linecap="round"/><path d="M280 196c-35-18-53-4-57 16 28 0 45-7 57-18M285 170c37-28 57-11 65 10-28 15-49 12-65 1" fill="#7eaa65" stroke="#47724f" stroke-width="5"/><g fill="#e491a1" stroke="#9f5c70" stroke-width="3"><circle cx="282" cy="123" r="24"/><circle cx="254" cy="137" r="20"/><circle cx="310" cy="137" r="20"/><circle cx="268" cy="101" r="18"/><circle cx="298" cy="101" r="18"/></g><circle cx="283" cy="121" r="11" fill="#f4cb6b"/><circle cx="350" cy="75" r="10" fill="#fff8df" opacity=".7"/><circle cx="384" cy="104" r="6" fill="#fff8df" opacity=".55"/></svg>`; }
+
+    /* -------------------- rendering -------------------- */
+    function updateSky() { const hour = new Date().getHours(); let gradient = "linear-gradient(160deg,#f4d8ba 0%,#e8d5b9 42%,#c7d9c2 100%)"; if (hour >= 6 && hour < 11) gradient = "linear-gradient(160deg,#f6d5a7,#e9e5c2 48%,#bed7c5)"; else if (hour >= 11 && hour < 17) gradient = "linear-gradient(160deg,#b9dddc,#e5e8c5 52%,#a8c891)"; else if (hour >= 17 && hour < 21) gradient = "linear-gradient(160deg,#f0b18d,#e2c09f 46%,#9db5aa)"; else gradient = "linear-gradient(160deg,#353d62,#596b79 50%,#80977e)"; $("sky").style.background = gradient; }
+    function renderGarden() { const grid = $("gardenGrid"); grid.innerHTML = state.plots.map((plot, index) => plot ? `<button class="plot ${isDroopy() ? "droopy" : ""}" type="button" data-plot="${index}" aria-label="View ${esc(plantLabel(plot))}"><div class="plant-art">${plantSVG(plot.type, plot.stage)}</div><span class="plant-name">${esc(plantLabel(plot))}</span></button>` : `<button class="plot empty" type="button" data-plot="${index}" aria-label="Empty garden plot"></button>`).join(""); $("emptyState").style.display = state.plots.some(Boolean) ? "none" : "block"; }
+    function isDroopy() { if (!state.lastSessionDate) return false; const days = Math.floor((new Date(isoDate()) - new Date(state.lastSessionDate)) / 86400000); return days > 1; }
+    function renderStats() { $("streakStat").textContent = `${state.streak || 0} day${state.streak === 1 ? "" : "s"}`; $("timeStat").textContent = formatMinutes(totalMinutes()); const blooms = state.plots.filter(p => p && p.stage >= 3).length; $("bloomStat").textContent = `${blooms} / ${CONFIG.plotCount}`; }
+    function renderHistory() { const list = $("historyList"); const sessions = [...state.sessions].sort((a,b) => b.completedAt - a.completedAt); list.innerHTML = sessions.map(session => `<article class="history-item"><div class="history-emoji">${session.emoji || "🌱"}</div><div class="history-main"><strong>${dateLabel(session.date)} · ${formatMinutes(session.minutes)} outside</strong><span>${session.completed ? "Plant grew" : "A small step"} · +${session.points} growth points</span></div><div class="history-note">${session.note ? `“${esc(session.note)}”` : "No note added"}</div></article>`).join(""); $("historyEmpty").style.display = sessions.length ? "none" : "block"; }
+    function showScreen(id) { document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen.id === id)); window.scrollTo({top:0, behavior:"smooth"}); }
+    function renderAll() { $("appShell").classList.toggle("demo-on", devMode); $("heroArt").innerHTML ||= heroSVG(); $("fastGrowthBtn").textContent = `Fast growth: ${fastGrowth ? "on" : "off"}`; renderGarden(); renderStats(); renderHistory(); updateSky(); if (state.activeSession) { showScreen("outsideScreen"); startTimerLoop(); } else if (state.pendingReward) showReward(state.pendingReward); }
+
+    /* -------------------- timer -------------------- */
+    function startTimer() { if (!state.activeSession) { state.activeSession = {startTime: Date.now()}; saveState(); } showScreen("outsideScreen"); startTimerLoop(); }
+    function startTimerLoop() { clearInterval(timerHandle); let lastStage = -1; const tick = () => { const minutes = elapsedMinutes(); $("timer").textContent = formatTimer(minutes); const stage = Math.min(3, minutes >= CONFIG.thresholds.bloom ? 3 : minutes >= CONFIG.thresholds.smallPlant ? 2 : minutes >= CONFIG.thresholds.sprout ? 1 : 0); if (stage !== lastStage) { $("outsidePlant").innerHTML = plantSVG("sunflower", stage, true); lastStage = stage; } $("outsideMessage").textContent = minutes >= CONFIG.minimumMinutes ? "Your next bloom is getting close. Keep enjoying the air." : "Notice one small thing around you."; }; tick(); timerHandle = setInterval(tick, demoMode || fastGrowth ? 250 : 1000); }
+    function finishTimer() { clearInterval(timerHandle); const minutes = elapsedMinutes(); const completed = minutes >= CONFIG.minimumMinutes; const points = completed ? Math.max(5, Math.round(minutes * (minutes >= CONFIG.thresholds.rarePlant ? 1.5 : 1))) : Math.max(1, Math.round(minutes * .35)); const session = {id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), date: isoDate(), completedAt: Date.now(), minutes, completed, points, emoji: "", note: ""}; state.activeSession = null; state.pendingReward = session; recordGrowth(session); saveState(); showReward(session); }
+    function updateStreak(date) { if (!state.lastSessionDate) state.streak = 1; else { const gap = Math.round((new Date(date) - new Date(state.lastSessionDate)) / 86400000); if (gap === 1) state.streak += 1; else if (gap > 1) state.streak = 1; } state.lastSessionDate = date; }
+    function recordGrowth(session) { updateStreak(session.date); const existingIndex = state.plots.findIndex(plot => plot && plot.stage < 3); let index = existingIndex >= 0 ? existingIndex : state.plots.findIndex(plot => !plot); let plot; if (index < 0) index = Math.floor(Math.random() * CONFIG.plotCount); if (state.plots[index]) { plot = state.plots[index]; plot.stage = Math.min(3, plot.stage + (session.completed ? 1 : 0)); } else { const type = session.minutes >= CONFIG.thresholds.rarePlant ? CONFIG.plantTypes[Math.floor(Math.random() * CONFIG.plantTypes.length)] : "sunflower"; plot = {type, stage: session.completed ? 1 : 0, earnedDate: session.date, sessionId: session.id}; state.plots[index] = plot; } session.plotIndex = index; session.plantType = plot.type; session.plantStage = plot.stage; state.sessions.push(session); }
+
+    /* -------------------- reward + journal -------------------- */
+    function showReward(session) { showScreen("rewardScreen"); $("rewardPlant").innerHTML = plantSVG(session.plantType, session.plantStage, true); $("rewardTitle").textContent = session.completed ? "Your garden grew!" : "A small step still grew something."; $("rewardMessage").textContent = session.completed ? `${session.minutes >= CONFIG.thresholds.rarePlant ? "That was a long one — a rare plant may have appeared. " : ""}You earned ${session.points} growth points and your ${session.plantType} is feeling proud.` : "Even 2 minutes counts, but stay 10 to grow a plant! You earned a little encouragement point."; $("rewardStats").innerHTML = `<span class="pill">⏱️ ${formatMinutes(session.minutes)} outside</span><span class="pill">✨ +${session.points} growth points</span><span class="pill">🔥 ${state.streak}-day streak</span>`; selectedEmoji = ""; $("journalNote").value = ""; $("emojiRow").innerHTML = CONFIG.journalEmojis.map(emoji => `<button type="button" class="emoji-choice" data-emoji="${emoji}" aria-label="${emoji}">${emoji}</button>`).join(""); $("emojiRow").querySelectorAll("[data-emoji]").forEach(btn => btn.addEventListener("click", () => { selectedEmoji = btn.dataset.emoji; $("emojiRow").querySelectorAll(".emoji-choice").forEach(b => b.classList.toggle("selected", b === btn)); })); $("rewardCard").querySelectorAll(".petal").forEach(p => { p.style.animationName = "none"; void p.offsetWidth; p.style.animationName = "fall"; }); }
+    function finishJournal(saveJournal) { const session = state.pendingReward; if (!session) return; if (saveJournal) { session.emoji = selectedEmoji || "🌱"; session.note = $("journalNote").value.trim(); } state.pendingReward = null; const stored = state.sessions.find(item => item.id === session.id); if (stored) { stored.emoji = session.emoji; stored.note = session.note; } saveState(); renderAll(); showScreen("gardenScreen"); toast(saveJournal && session.emoji !== "🌱" ? "Memory saved to your garden journal." : "Your little win is tucked into the garden."); }
+
+    /* -------------------- detail card + helpers -------------------- */
+    function showPlantDetail(plot) { const session = state.sessions.find(item => item.id === plot.sessionId) || state.sessions.find(item => item.plotIndex === state.plots.indexOf(plot)); $("detailPlant").innerHTML = plantSVG(plot.type, plot.stage, true); $("detailTitle").textContent = plantLabel(plot); $("detailSubtitle").textContent = `Stage ${plot.stage + 1} of 4`; $("detailGrid").innerHTML = `<div class="detail-row"><span>First grew</span><strong>${dateLabel(plot.earnedDate)}</strong></div><div class="detail-row"><span>Time outside</span><strong>${session ? formatMinutes(session.minutes) : "—"}</strong></div><div class="detail-row"><span>What you saw</span><strong>${session && session.emoji ? session.emoji : "Not logged"}</strong></div><div class="detail-row"><span>Memory</span><strong>${session && session.note ? `“${esc(session.note)}”` : "No note added"}</strong></div>`; $("modal").classList.add("open"); }
+    function toast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2600); }
+    function seedGarden() { state = freshState(); state.streak = 7; state.lastSessionDate = isoDate(); const types = ["sunflower","mushroom","cactus","cherry"]; state.plots = state.plots.map((_,i) => ({type:types[i%types.length],stage:i%4,earnedDate:isoDate(new Date(Date.now() - (i+1)*86400000)),sessionId:"demo-"+i})); state.sessions = state.plots.map((plot,i) => ({id:plot.sessionId,date:plot.earnedDate,completedAt:Date.now()-i*86400000,minutes:10+i*4,completed:true,points:10+i,emoji:CONFIG.journalEmojis[i%CONFIG.journalEmojis.length],note:["Warm sunshine on my face.","A tiny bird kept me company.","Found a very determined little bug.","The trees were extra green today."][i%4],plotIndex:i,plantType:plot.type,plantStage:plot.stage})); saveState(); renderAll(); showScreen("gardenScreen"); toast("Demo garden seeded — try a quick outside session!"); }
+    function fullGrowth() { const session = {id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), date: isoDate(), completedAt: Date.now(), minutes: CONFIG.thresholds.rarePlant, completed: true, points: CONFIG.thresholds.rarePlant, emoji: "", note: ""}; recordGrowth(session); const plot = state.plots[session.plotIndex]; plot.stage = 3; plot.earnedDate = plot.earnedDate || session.date; session.plantStage = 3; saveState(); showReward(session); toast("Developer demo: full bloom unlocked."); }
+    function resetData() { if (confirm("Reset the garden and clear all saved sessions?")) { localStorage.removeItem(CONFIG.storageKey); state = freshState(); renderAll(); showScreen("gardenScreen"); toast("Fresh soil, fresh start."); } }
+    function toggleFastGrowth() { fastGrowth = !fastGrowth; localStorage.setItem("touch-grass-fast-growth", fastGrowth ? "1" : "0"); renderAll(); toast(fastGrowth ? "Fast growth enabled for testing." : "Fast growth disabled."); }
+    function runDemonstration() { seedGarden(); fastGrowth = true; localStorage.setItem("touch-grass-fast-growth", "1"); state.activeSession = {startTime: Date.now()}; saveState(); showScreen("outsideScreen"); startTimerLoop(); toast("Demo started — watch the garden respond."); setTimeout(() => { if (state.activeSession) finishTimer(); }, 4000); }
+
+    /* -------------------- event wiring -------------------- */
+    $("goOutsideBtn").addEventListener("click", startTimer); $("backBtn").addEventListener("click", finishTimer); $("historyBtn").addEventListener("click", () => { renderHistory(); showScreen("historyScreen"); }); $("backToGardenBtn").addEventListener("click", () => showScreen("gardenScreen")); $("saveJournalBtn").addEventListener("click", () => finishJournal(true)); $("skipJournalBtn").addEventListener("click", () => finishJournal(false)); $("closeModalBtn").addEventListener("click", () => $("modal").classList.remove("open")); $("modal").addEventListener("click", e => { if (e.target === $("modal")) $("modal").classList.remove("open"); }); $("gardenGrid").addEventListener("click", e => { const button = e.target.closest("[data-plot]"); if (!button) return; const plot = state.plots[Number(button.dataset.plot)]; if (plot) showPlantDetail(plot); }); $("demoPlayBtn").addEventListener("click", runDemonstration); $("fastGrowthBtn").addEventListener("click", toggleFastGrowth); $("seedBtn").addEventListener("click", seedGarden); $("fullGrowthBtn").addEventListener("click", fullGrowth); $("resetBtn").addEventListener("click", resetData); document.addEventListener("keydown", e => { if (e.key === "Escape") $("modal").classList.remove("open"); });
+    renderAll();
+  </script>
+</body>
+</html>
